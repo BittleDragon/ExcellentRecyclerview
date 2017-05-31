@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:padding="10dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <com.wang.avi.AVLoadingIndicatorView
+        android:id="@+id/headerloadingView"
+        android:visibility="invisible"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:indicatorName="LineSpinFadeLoaderIndicator"
+        style="@style/AVLoadingIndicatorView.Small"
+        app:indicatorColor="@color/light_gray"/>
+    
+    <LinearLayout
+        android:id="@+id/ll_refresh_status"
+        android:layout_gravity="center_horizontal|bottom"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    
+        <ImageView
+            android:id="@+id/iv_Arrow"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/arrow_down_guide"/>
+    
+        <TextView
+            android:id="@+id/tv_refreshstatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="下拉刷新"
+            android:textColor="@color/system_gray"
+            android:textSize="15sp"/>
+    </LinearLayout>
+    
+</FrameLayout>
