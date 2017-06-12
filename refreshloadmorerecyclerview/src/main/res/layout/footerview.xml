@@ -1,27 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:gravity="center"
-    android:orientation="horizontal"
-    android:paddingBottom="15dp"
-    android:paddingTop="15dp">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
     
-    <com.wang.avi.AVLoadingIndicatorView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@style/AVLoadingIndicatorView.Small"
-        app:indicatorColor="@color/system_gray"
-        app:indicatorName="BallTrianglePathIndicator"/>
-    
-    <TextView
-        android:id="@+id/tv_footer"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginLeft="10dp"
+    <LinearLayout
+        android:id="@+id/ll_loadMoreView"
         android:gravity="center"
-        android:text="正在加载..."
-        android:textColor="@color/system_gray"
-        android:textSize="13sp"/>
-</LinearLayout>
+        android:orientation="horizontal"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    
+        <com.wang.avi.AVLoadingIndicatorView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/AVLoadingIndicatorView.Small"
+            app:indicatorColor="@color/system_gray"
+            app:indicatorName="BallTrianglePathIndicator"/>
+    
+        <TextView
+            android:id="@+id/tv_footer"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginLeft="10dp"
+            android:gravity="center"
+            android:text="正在加载..."
+            android:textColor="@color/system_gray"
+            android:textSize="13sp"/>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/ll_noMoreView"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="5dp"
+        android:background="@color/light_gray">
+    
+        <View
+            android:layout_width="10dp"
+            android:layout_height="1dp"
+            android:background="@color/gray"/>
+        <TextView
+            android:layout_marginLeft="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="End"
+            android:textSize="14sp"
+            android:textColor="@color/gray" />
+        <View
+            android:layout_marginLeft="2dp"
+            android:layout_width="10dp"
+            android:layout_height="1dp"
+            android:background="@color/gray"/>
+        
+    </LinearLayout>
+    
+    
+</FrameLayout>
