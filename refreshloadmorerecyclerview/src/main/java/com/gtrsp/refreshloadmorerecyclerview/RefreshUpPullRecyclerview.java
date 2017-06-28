@@ -126,7 +126,8 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                         //释放刷新
                         currentStatus = RELEASE_REFRESH;
                         refreshHeader();
-                    } else if (deltaY < refreshHeaderHeight && currentStatus == RELEASE_REFRESH) {
+                    } else if (deltaY < refreshHeaderHeight && (currentStatus == RELEASE_REFRESH
+                            || currentStatus == DEFAULT)) {
                         //下拉刷新
                         currentStatus = DOWNPULL_REFRESH;
                         refreshHeader();
