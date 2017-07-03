@@ -227,7 +227,8 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
             headerHolder.tvRefreshstatus.setText("下拉刷新");
         } else currentStatus = DEFAULT;
 
-        wrapper.notifyDataSetChanged();
+        if (wrapper != null)
+            wrapper.notifyDataSetChanged();
     }
 
     /**
