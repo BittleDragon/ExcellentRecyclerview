@@ -1,6 +1,7 @@
 package com.gtrsp.refreshloadmorerecyclerview;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -108,6 +109,8 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                 if (layoutManager instanceof GridLayoutManager) {
                     firstVisibleItem = ((GridLayoutManager) layoutManager)
                             .findFirstVisibleItemPosition();
+                    if (firstVisibleItem == 1)
+                        firstVisibleItem = 0;
                 } else if (layoutManager instanceof LinearLayoutManager) {
                     firstVisibleItem = ((LinearLayoutManager) layoutManager)
                             .findFirstVisibleItemPosition();
@@ -161,6 +164,19 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                 break;
         }
         return super.onTouchEvent(e);
+    }
+
+    /**
+     * 手动设置appbaylayout, 解决有appbaylayout下拉刷新失效问题
+     * @param appBarLayout
+     */
+    public void setAppbarlayoutStatusListener(@NonNull AppBarLayout appBarLayout) {
+        appBarLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
+            @Override
+            public void onStateChanged(AppBarLayout appBarLayout, State state) {
+                appbarState = state;
+            }
+        });
     }
 
     @Override
