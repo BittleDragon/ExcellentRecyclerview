@@ -410,12 +410,12 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     public void initAnimation() {
         upArrowAnim = new RotateAnimation(0, -180, Animation.RELATIVE_TO_SELF, 0.5f,
                 Animation.RELATIVE_TO_SELF, 0.5f);
-        upArrowAnim.setDuration(300);
+        upArrowAnim.setDuration(200);
         upArrowAnim.setFillAfter(true);//设置停留在动画结束时的状态
 
         downArrowAnim = new RotateAnimation(-180, 0, Animation.RELATIVE_TO_SELF, 0.5f,
                 Animation.RELATIVE_TO_SELF, 0.5f);
-        downArrowAnim.setDuration(300);
+        downArrowAnim.setDuration(200);
         downArrowAnim.setFillAfter(true);
     }
 
