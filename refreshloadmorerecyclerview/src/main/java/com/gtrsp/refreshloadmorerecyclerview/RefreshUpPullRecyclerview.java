@@ -165,17 +165,24 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                         refreshHeader();
                         if (onRefreshListener != null)
                             onRefreshListener.onPullDownRefresh();
-                        isNoMoreShowing = false;
-                        if (footerLoadHolder != null) {
-                            footerLoadHolder.llNoMoreView.setVisibility(GONE);
-                            footerLoadHolder.llLoadMoreView.setVisibility(VISIBLE);
-                        }
+                        showLoadMore();
                         return false;
                     }
                     break;
             }
         }
         return super.onTouchEvent(e);
+    }
+
+    /**
+     * 使上拉加载布局显示加载的view
+     */
+    private void showLoadMore() {
+        isNoMoreShowing = false;
+        if (footerLoadHolder != null) {
+            footerLoadHolder.llNoMoreView.setVisibility(GONE);
+            footerLoadHolder.llLoadMoreView.setVisibility(VISIBLE);
+        }
     }
 
     /**
