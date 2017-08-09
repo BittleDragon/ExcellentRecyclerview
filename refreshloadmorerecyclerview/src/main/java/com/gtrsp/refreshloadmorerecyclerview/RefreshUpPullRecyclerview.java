@@ -1,5 +1,6 @@
 package com.gtrsp.refreshloadmorerecyclerview;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
@@ -14,8 +15,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -41,13 +40,24 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     private int refreshHeaderHeight;
     private HeaderRefreshHolder headerHolder;
     private FooterLoadHolder footerLoadHolder;
-    private RotateAnimation upArrowAnim;
-    private RotateAnimation downArrowAnim;
     private float downY;
     private OnRefreshListener onRefreshListener;
     private RefreshUpPullWrapper wrapper;
     private boolean isNoMoreShowing = false;
-    private AppBarStateChangeListener.State appbarState = AppBarStateChangeListener.State.EXPANDED;
+    private AppBarStateChangeListener.State appbarState
+            = AppBarStateChangeListener.State.EXPANDED;
+    private boolean hideLoadMoreView = false;//是否隐藏加载更多
+    private boolean hidePullDownRefresh = false;//是否隐藏下拉刷新
+    private ObjectAnimator upAnimator;
+    private ObjectAnimator downAnimator;
+
+    public void setHidePullDownRefresh(boolean hidePullDownRefresh) {
+        this.hidePullDownRefresh = hidePullDownRefresh;
+    }
+
+    public void setHideLoadMoreView(boolean hideLoadMoreView) {
+        this.hideLoadMoreView = hideLoadMoreView;
+    }
 
     public void setOnRefreshListener(OnRefreshListener onRefreshListener) {
         this.onRefreshListener = onRefreshListener;
@@ -88,80 +98,82 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if (downY == -1) {
-            downY = e.getY();
-        }
-        switch (e.getAction()) {
-            case MotionEvent.ACTION_DOWN:
+        if (!hidePullDownRefresh) {
+
+            if (downY == -1) {
                 downY = e.getY();
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                if (downY == 0)
+            }
+            switch (e.getAction()) {
+                case MotionEvent.ACTION_DOWN:
                     downY = e.getY();
+                    break;
 
-                if (currentStatus == REFRESHING || currentStatus == ISLOADING_MORE) break;
+                case MotionEvent.ACTION_MOVE:
+                    if (downY == 0)
+                        downY = e.getY();
 
-                int deltaY = (int) (e.getY() - downY);
+                    if (currentStatus == REFRESHING || currentStatus == ISLOADING_MORE) break;
 
-                int firstVisibleItem;
-                LayoutManager layoutManager = getLayoutManager();
-                if (layoutManager instanceof GridLayoutManager) {
-                    firstVisibleItem = ((GridLayoutManager) layoutManager)
-                            .findFirstVisibleItemPosition();
-                    if (firstVisibleItem == 1)
-                        firstVisibleItem = 0;
-                } else if (layoutManager instanceof LinearLayoutManager) {
-                    firstVisibleItem = ((LinearLayoutManager) layoutManager)
-                            .findFirstVisibleItemPosition();
-                } else {
-                    int[] firstPostition = new
-                            int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
-                    ((StaggeredGridLayoutManager) layoutManager)
-                            .findFirstVisibleItemPositions(firstPostition);
-                    firstVisibleItem = findMin(firstPostition);
-                }
+                    int deltaY = (int) (e.getY() - downY);
 
-                //头布局处理
-                if (deltaY > 0 && firstVisibleItem == 0 && appbarState
-                        == AppBarStateChangeListener.State.EXPANDED) {
-                    if (deltaY > refreshHeaderHeight && currentStatus != RELEASE_REFRESH) {
-                        //释放刷新
-                        currentStatus = RELEASE_REFRESH;
-                        refreshHeader();
-                    } else if (deltaY < refreshHeaderHeight && (currentStatus == RELEASE_REFRESH
-                            || currentStatus == DEFAULT)) {
-                        //下拉刷新
-                        currentStatus = DOWNPULL_REFRESH;
-                        refreshHeader();
+                    int firstVisibleItem;
+                    LayoutManager layoutManager = getLayoutManager();
+                    if (layoutManager instanceof GridLayoutManager) {
+                        firstVisibleItem = ((GridLayoutManager) layoutManager)
+                                .findFirstVisibleItemPosition();
+                        if (firstVisibleItem == 1)
+                            firstVisibleItem = 0;
+                    } else if (layoutManager instanceof LinearLayoutManager) {
+                        firstVisibleItem = ((LinearLayoutManager) layoutManager)
+                                .findFirstVisibleItemPosition();
+                    } else {
+                        int[] firstPostition = new
+                                int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
+                        ((StaggeredGridLayoutManager) layoutManager)
+                                .findFirstVisibleItemPositions(firstPostition);
+                        firstVisibleItem = findMin(firstPostition);
                     }
-                    setViewHeight(headerHolder.itemView, deltaY);
-                    return false;
-                }
-                break;
 
-            case MotionEvent.ACTION_UP:
-                downY = -1;
-                if (currentStatus == DOWNPULL_REFRESH && appbarState
-                        == AppBarStateChangeListener.State.EXPANDED) {
-                    //"下拉刷新"状态下松手,隐藏头布局
-                    setViewHeight(headerHolder.itemView, 0);
-                } else if (currentStatus == RELEASE_REFRESH && appbarState
-                        == AppBarStateChangeListener.State.EXPANDED) {
-                    //"松开刷新"状态下松手,显示刷新view
-                    currentStatus = REFRESHING;
-                    setViewHeight(headerHolder.itemView, refreshHeaderHeight);
-                    refreshHeader();
-                    if (onRefreshListener != null)
-                        onRefreshListener.onPullDownRefresh();
-                    isNoMoreShowing = false;
-                    if (footerLoadHolder != null) {
-                        footerLoadHolder.llNoMoreView.setVisibility(GONE);
-                        footerLoadHolder.llLoadMoreView.setVisibility(VISIBLE);
+                    //头布局处理
+                    if (deltaY > 0 && firstVisibleItem == 0 && appbarState
+                            == AppBarStateChangeListener.State.EXPANDED ) {
+                        if (deltaY > refreshHeaderHeight && currentStatus != RELEASE_REFRESH) {
+                            //释放刷新
+                            currentStatus = RELEASE_REFRESH;
+                            refreshHeader();
+                        } else if (deltaY < refreshHeaderHeight && currentStatus == RELEASE_REFRESH) {
+                            //下拉刷新
+                            currentStatus = DOWNPULL_REFRESH;
+                            refreshHeader();
+                        }
+                        setViewHeight(headerHolder.itemView, deltaY);
+                        return false;
                     }
-                    return false;
-                }
-                break;
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    downY = -1;
+                    if (currentStatus == DOWNPULL_REFRESH && appbarState
+                            == AppBarStateChangeListener.State.EXPANDED) {
+                        //"下拉刷新"状态下松手,隐藏头布局
+                        setViewHeight(headerHolder.itemView, 0);
+                    } else if (currentStatus == RELEASE_REFRESH && appbarState
+                            == AppBarStateChangeListener.State.EXPANDED) {
+                        //"松开刷新"状态下松手,显示刷新view
+                        currentStatus = REFRESHING;
+                        setViewHeight(headerHolder.itemView, refreshHeaderHeight);
+                        refreshHeader();
+                        if (onRefreshListener != null)
+                            onRefreshListener.onPullDownRefresh();
+                        isNoMoreShowing = false;
+                        if (footerLoadHolder != null) {
+                            footerLoadHolder.llNoMoreView.setVisibility(GONE);
+                            footerLoadHolder.llLoadMoreView.setVisibility(VISIBLE);
+                        }
+                        return false;
+                    }
+                    break;
+            }
         }
         return super.onTouchEvent(e);
     }
@@ -223,7 +235,6 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     }
 
     private void setViewHeight(View view, int height) {
-//        Logger.e("setViewHeight被调用了");
         if (height < 0) height = 0;
         ViewGroup.LayoutParams lp = view.getLayoutParams();
         lp.height = height;
@@ -235,7 +246,6 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
      */
     public void onRefreshOrLoadMoreCompleted() {
         if (currentStatus == REFRESHING) {
-//            Logger.e("下拉刷新完成走了");
             currentStatus = DEFAULT;
             setViewHeight(headerHolder.itemView, 0);
             headerHolder.headerloadingView.setVisibility(INVISIBLE);
@@ -268,12 +278,17 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
             case DOWNPULL_REFRESH:
                 //转变为下拉刷新状态
                 headerHolder.tvRefreshstatus.setText("下拉刷新");
-                headerHolder.ivArrow.startAnimation(downArrowAnim);
+//                headerHolder.ivArrow.startAnimation(downArrowAnim);
+                //旋转箭头
+                upAnimator.cancel();
+                downAnimator.start();
                 break;
             case RELEASE_REFRESH:
                 //转变为松开刷新状态
                 headerHolder.tvRefreshstatus.setText("松开刷新");
-                headerHolder.ivArrow.startAnimation(upArrowAnim);
+//                headerHolder.ivArrow.startAnimation(upArrowAnim);
+                downAnimator.cancel();
+                upAnimator.start();
                 break;
             case REFRESHING:
                 //正在刷新
@@ -293,8 +308,6 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
         public RefreshUpPullWrapper(Adapter adapter) {
             mInnerAdapter = adapter;
-            //初始化箭头的旋转动画
-            initAnimation();
         }
 
         public Adapter getmInnerAdapter() {
@@ -303,16 +316,25 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
         @Override
         public int getItemCount() {
-            return 1 + mInnerAdapter.getItemCount() + 1;
+            return (hidePullDownRefresh? 0 : 1) +
+                    mInnerAdapter.getItemCount() + (hideLoadMoreView ? 0 : 1);
         }
 
         @Override
         public int getItemViewType(int position) {
-            if (position == 0)
-                return TYPE_REFRESH_HEADER;
-            else if (position == 1 + mInnerAdapter.getItemCount()) {
-                return TYPE_LOADMORE_FOOTER;
-            } else return mInnerAdapter.getItemViewType(position - 1);
+            if (hidePullDownRefresh) {
+                if (position == mInnerAdapter.getItemCount()) {
+                    return TYPE_LOADMORE_FOOTER;
+                }else
+                    return mInnerAdapter.getItemViewType(position);
+            }else {
+                if (position == 0)
+                    return TYPE_REFRESH_HEADER;
+                else if (position == 1 + mInnerAdapter.getItemCount()) {
+                    return TYPE_LOADMORE_FOOTER;
+                } else return mInnerAdapter.getItemViewType(position - 1);
+            }
+
         }
 
         @Override
@@ -330,6 +352,9 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                 //隐藏下拉刷新布局
                 setViewHeight(headerHolder.itemView, 0);
 
+                //初始化箭头的旋转动画
+                initAnimation();
+
                 return headerHolder;
             } else if (viewType == TYPE_LOADMORE_FOOTER) {
                 view = LayoutInflater.from(context).inflate(R.layout.footerview, parent, false);
@@ -341,6 +366,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
                 return footerLoadHolder;
             } else return mInnerAdapter.onCreateViewHolder(parent, viewType);
+
         }
 
         @Override
@@ -355,7 +381,11 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                         onRefreshListener.onLoadMore();
                 }
             } else if (!(holder instanceof HeaderRefreshHolder))
-                mInnerAdapter.onBindViewHolder(holder, position - 1);
+                if (hidePullDownRefresh) {
+                    mInnerAdapter.onBindViewHolder(holder, position);
+                }else {
+                    mInnerAdapter.onBindViewHolder(holder, position - 1);
+                }
         }
 
         @Override
@@ -424,18 +454,18 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
      * 初始化箭头的动画
      */
     public void initAnimation() {
-        upArrowAnim = new RotateAnimation(0, -180, Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f);
-        upArrowAnim.setDuration(200);
-        upArrowAnim.setFillAfter(true);//设置停留在动画结束时的状态
+        upAnimator = ObjectAnimator
+                .ofFloat(headerHolder.ivArrow, "rotation", 0, -180f)
+                .setDuration(400);
 
-        downArrowAnim = new RotateAnimation(-180, 0, Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f);
-        downArrowAnim.setDuration(200);
-        downArrowAnim.setFillAfter(true);
+        downAnimator = ObjectAnimator
+                .ofFloat(headerHolder.ivArrow, "rotation", -180f, 0)
+                .setDuration(400);
+
     }
 
     static class FooterLoadHolder extends ViewHolder {
+
         @BindView(R2.id.ll_loadMoreView)
         LinearLayout llLoadMoreView;
         @BindView(R2.id.ll_noMoreView)
