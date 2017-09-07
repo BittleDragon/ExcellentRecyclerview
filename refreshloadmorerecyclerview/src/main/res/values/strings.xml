@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">refreshLoadMoreRecyclerview</string>
+    <string name="load_failed">加载失败了, 点击重试</string>
 </resources>

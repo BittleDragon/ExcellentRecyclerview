@@ -40,10 +40,12 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     private int refreshHeaderHeight;
     private HeaderRefreshHolder headerHolder;
     private FooterLoadHolder footerLoadHolder;
+//    private RotateAnimation upArrowAnim;
+//    private RotateAnimation downArrowAnim;
     private float downY;
     private OnRefreshListener onRefreshListener;
     private RefreshUpPullWrapper wrapper;
-    private boolean isNoMoreShowing = false;
+    private boolean isLoadMoreShowing = true;
     private AppBarStateChangeListener.State appbarState
             = AppBarStateChangeListener.State.EXPANDED;
     private boolean hideLoadMoreView = false;//是否隐藏加载更多
@@ -67,6 +69,8 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
         void onPullDownRefresh();
 
         void onLoadMore();
+
+        void onRetry();
     }
 
     public RefreshUpPullRecyclerview(Context context) {
@@ -175,17 +179,6 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     }
 
     /**
-     * 使上拉加载布局显示加载的view
-     */
-    private void showLoadMore() {
-        isNoMoreShowing = false;
-        if (footerLoadHolder != null) {
-            footerLoadHolder.llNoMoreView.setVisibility(GONE);
-            footerLoadHolder.llLoadMoreView.setVisibility(VISIBLE);
-        }
-    }
-
-    /**
      * 手动设置appbaylayout, 解决有appbaylayout下拉刷新失效问题
      * @param appBarLayout
      */
@@ -249,6 +242,14 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     }
 
     /**
+     * 刷新指定条目
+     * @param itemPosition
+     */
+    public void notifyItemChanged(int itemPosition) {
+        wrapper.notifyItemChanged(itemPosition);
+    }
+
+    /**
      * 刷新或加载完成调用此方法进行相应的ui变化
      */
     public void onRefreshOrLoadMoreCompleted() {
@@ -265,16 +266,41 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     }
 
     /**
+     * 显示正在加载的尾布局(
+     */
+    public void showLoadMore() {
+        if (footerLoadHolder != null) {
+            isLoadMoreShowing = true;
+            footerLoadHolder.llNoMoreView.setVisibility(GONE);
+            footerLoadHolder.llLoadMoreView.setVisibility(VISIBLE);
+            footerLoadHolder.llLoadFailedView.setVisibility(View.GONE);
+        }
+    }
+
+    /**
      * 显示没有数据的尾布局
      */
     public void showNoMoreData() {
         if (currentStatus == ISLOADING_MORE) {
             currentStatus = DEFAULT;
-            isNoMoreShowing = true;
+            isLoadMoreShowing = false;
             footerLoadHolder.llNoMoreView.setVisibility(VISIBLE);
             footerLoadHolder.llLoadMoreView.setVisibility(GONE);
+            footerLoadHolder.llLoadFailedView.setVisibility(GONE);
         }
 
+    }
+
+    /**
+     * 显示加载失败的尾布局
+     */
+    public void showLoadFailed() {
+        if (currentStatus == ISLOADING_MORE) {
+            isLoadMoreShowing = false;
+            footerLoadHolder.llLoadFailedView.setVisibility(VISIBLE);
+            footerLoadHolder.llNoMoreView.setVisibility(GONE);
+            footerLoadHolder.llLoadMoreView.setVisibility(GONE);
+        }
     }
 
     /**
@@ -306,7 +332,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
         }
     }
 
-    public class RefreshUpPullWrapper extends Adapter {
+     public class RefreshUpPullWrapper extends Adapter {
 
         private Adapter mInnerAdapter;
         private static final int TYPE_REFRESH_HEADER = 10000;
@@ -368,7 +394,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                 footerLoadHolder = new FooterLoadHolder(view);
 
                 //脚布局的初始化
-                footerLoadHolder.itemView.measure(0, 0);
+//                footerLoadHolder.itemView.measure(0, 0);
 //                int footerHeight = footerLoadHolder.itemView.getMeasuredHeight();
 
                 return footerLoadHolder;
@@ -382,11 +408,18 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
                 //上拉加载更多
                 //使加载的条目完全展示出来
                 RefreshUpPullRecyclerview.this.scrollToPosition(getItemCount() - 1);
-                if (!isNoMoreShowing) {
+                if (isLoadMoreShowing) {
                     currentStatus = ISLOADING_MORE;
                     if (onRefreshListener != null)
                         onRefreshListener.onLoadMore();
                 }
+                footerLoadHolder.llLoadFailedView.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showLoadMore();
+                        onRefreshListener.onRetry();
+                    }
+                });
             } else if (!(holder instanceof HeaderRefreshHolder))
                 if (hidePullDownRefresh) {
                     mInnerAdapter.onBindViewHolder(holder, position);
@@ -477,6 +510,8 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
         LinearLayout llLoadMoreView;
         @BindView(R2.id.ll_noMoreView)
         LinearLayout llNoMoreView;
+        @BindView(R2.id.ll_loadFailedView)
+        LinearLayout llLoadFailedView;
 
         public FooterLoadHolder(View itemView) {
             super(itemView);

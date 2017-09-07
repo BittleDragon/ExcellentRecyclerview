@@ -3,4 +3,5 @@
     <color name="system_gray">#8a000000</color>
     <color name="light_gray">#25656565</color>
     <color name="gray">#cc666666</color>
+    <color name="red">#e35531</color>
 </resources>
