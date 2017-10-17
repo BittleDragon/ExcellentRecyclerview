@@ -52,6 +52,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     private boolean hidePullDownRefresh = false;//是否隐藏下拉刷新
     private ObjectAnimator upAnimator;
     private ObjectAnimator downAnimator;
+    private final RecyclerView.AdapterDataObserver mDataObserver = new DataObserver();
 
     public void setHidePullDownRefresh(boolean hidePullDownRefresh) {
         this.hidePullDownRefresh = hidePullDownRefresh;
@@ -89,6 +90,8 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     public void setAdapter(Adapter adapter) {
         wrapper = new RefreshUpPullWrapper(adapter);
         super.setAdapter(wrapper);
+        adapter.registerAdapterDataObserver(mDataObserver);
+        mDataObserver.onChanged();
     }
 
     //避免用户自己调用getAdapter() 引起的ClassCastException
@@ -249,20 +252,62 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
         wrapper.notifyItemChanged(itemPosition);
     }
 
-    /**
-     * 刷新或加载完成调用此方法进行相应的ui变化
-     */
-    public void onRefreshOrLoadMoreCompleted() {
-        if (currentStatus == REFRESHING) {
-            currentStatus = DEFAULT;
-            setViewHeight(headerHolder.itemView, 0);
-            headerHolder.headerloadingView.setVisibility(INVISIBLE);
-            headerHolder.llRefreshStatus.setVisibility(VISIBLE);
-            headerHolder.tvRefreshstatus.setText("下拉刷新");
-        } else currentStatus = DEFAULT;
+//    /**
+//     * 刷新或加载完成调用此方法进行相应的ui变化
+//     */
+//    public void onRefreshOrLoadMoreCompleted() {
+//        if (currentStatus == REFRESHING) {
+//            currentStatus = DEFAULT;
+//            setViewHeight(headerHolder.itemView, 0);
+//            headerHolder.headerloadingView.setVisibility(INVISIBLE);
+//            headerHolder.llRefreshStatus.setVisibility(VISIBLE);
+//            headerHolder.tvRefreshstatus.setText("下拉刷新");
+//        } else currentStatus = DEFAULT;
+//
+//        if (wrapper != null)
+//            wrapper.notifyDataSetChanged();
+//    }
 
-        if (wrapper != null)
-            wrapper.notifyDataSetChanged();
+    private class DataObserver extends RecyclerView.AdapterDataObserver {
+        @Override
+        public void onChanged() {
+            if (currentStatus == REFRESHING) {
+                currentStatus = DEFAULT;
+                setViewHeight(headerHolder.itemView, 0);
+                headerHolder.headerloadingView.setVisibility(INVISIBLE);
+                headerHolder.llRefreshStatus.setVisibility(VISIBLE);
+                headerHolder.tvRefreshstatus.setText("下拉刷新");
+            } else currentStatus = DEFAULT;
+
+            if (wrapper != null) {
+                wrapper.notifyDataSetChanged();
+            }
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            wrapper.notifyItemRangeInserted(positionStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount) {
+            wrapper.notifyItemRangeChanged(positionStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
+            wrapper.notifyItemRangeChanged(positionStart, itemCount, payload);
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            wrapper.notifyItemRangeRemoved(positionStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+            wrapper.notifyItemMoved(fromPosition, toPosition);
+        }
     }
 
     /**
