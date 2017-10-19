@@ -40,7 +40,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
     private int refreshHeaderHeight;
     private HeaderRefreshHolder headerHolder;
     private FooterLoadHolder footerLoadHolder;
-//    private RotateAnimation upArrowAnim;
+    //    private RotateAnimation upArrowAnim;
 //    private RotateAnimation downArrowAnim;
     private float downY;
     private OnRefreshListener onRefreshListener;
@@ -143,7 +143,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
                     //头布局处理
                     if (deltaY > 0 && firstVisibleItem == 0 && appbarState
-                            == AppBarStateChangeListener.State.EXPANDED ) {
+                            == AppBarStateChangeListener.State.EXPANDED) {
                         if (deltaY > refreshHeaderHeight && currentStatus != RELEASE_REFRESH) {
                             //释放刷新
                             currentStatus = RELEASE_REFRESH;
@@ -183,6 +183,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
     /**
      * 手动设置appbaylayout, 解决有appbaylayout下拉刷新失效问题
+     *
      * @param appBarLayout
      */
     public void setAppbarlayoutStatusListener(@NonNull AppBarLayout appBarLayout) {
@@ -246,6 +247,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
     /**
      * 刷新指定条目
+     *
      * @param itemPosition
      */
     public void notifyItemChanged(int itemPosition) {
@@ -359,14 +361,16 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 //                headerHolder.ivArrow.startAnimation(downArrowAnim);
                 //旋转箭头
                 upAnimator.cancel();
-                downAnimator.start();
+                if (headerHolder.ivArrow.getRotation() == -180)
+                    downAnimator.start();
                 break;
             case RELEASE_REFRESH:
                 //转变为松开刷新状态
                 headerHolder.tvRefreshstatus.setText("松开刷新");
 //                headerHolder.ivArrow.startAnimation(upArrowAnim);
                 downAnimator.cancel();
-                upAnimator.start();
+                if (headerHolder.ivArrow.getRotation() == 0)
+                    upAnimator.start();
                 break;
             case REFRESHING:
                 //正在刷新
@@ -377,7 +381,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
         }
     }
 
-     public class RefreshUpPullWrapper extends Adapter {
+    public class RefreshUpPullWrapper extends Adapter {
 
         private Adapter mInnerAdapter;
         private static final int TYPE_REFRESH_HEADER = 10000;
@@ -394,7 +398,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
 
         @Override
         public int getItemCount() {
-            return (hidePullDownRefresh? 0 : 1) +
+            return (hidePullDownRefresh ? 0 : 1) +
                     mInnerAdapter.getItemCount() + (hideLoadMoreView ? 0 : 1);
         }
 
@@ -403,9 +407,9 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
             if (hidePullDownRefresh) {
                 if (position == mInnerAdapter.getItemCount()) {
                     return TYPE_LOADMORE_FOOTER;
-                }else
+                } else
                     return mInnerAdapter.getItemViewType(position);
-            }else {
+            } else {
                 if (position == 0)
                     return TYPE_REFRESH_HEADER;
                 else if (position == 1 + mInnerAdapter.getItemCount()) {
@@ -468,7 +472,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
             } else if (!(holder instanceof HeaderRefreshHolder))
                 if (hidePullDownRefresh) {
                     mInnerAdapter.onBindViewHolder(holder, position);
-                }else {
+                } else {
                     mInnerAdapter.onBindViewHolder(holder, position - 1);
                 }
         }
