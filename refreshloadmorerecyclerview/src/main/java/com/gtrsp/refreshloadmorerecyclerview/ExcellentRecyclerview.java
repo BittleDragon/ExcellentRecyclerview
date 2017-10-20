@@ -29,7 +29,7 @@ import butterknife.ButterKnife;
  * Created by raoxuting on 2017/5/24.
  */
 
-public class RefreshUpPullRecyclerview extends RecyclerView {
+public class ExcellentRecyclerview extends RecyclerView {
 
     private final int DOWNPULL_REFRESH = 1;//下拉刷新状态
     private final int RELEASE_REFRESH = 2;//松开刷新状态
@@ -74,15 +74,15 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
         void onRetry();
     }
 
-    public RefreshUpPullRecyclerview(Context context) {
+    public ExcellentRecyclerview(Context context) {
         this(context, null);
     }
 
-    public RefreshUpPullRecyclerview(Context context, AttributeSet attrs) {
+    public ExcellentRecyclerview(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RefreshUpPullRecyclerview(Context context, AttributeSet attrs, int defStyle) {
+    public ExcellentRecyclerview(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
@@ -456,7 +456,7 @@ public class RefreshUpPullRecyclerview extends RecyclerView {
             if (holder instanceof FooterLoadHolder) {
                 //上拉加载更多
                 //使加载的条目完全展示出来
-                RefreshUpPullRecyclerview.this.scrollToPosition(getItemCount() - 1);
+                ExcellentRecyclerview.this.scrollToPosition(getItemCount() - 1);
                 if (isLoadMoreShowing) {
                     currentStatus = ISLOADING_MORE;
                     if (onRefreshListener != null)
